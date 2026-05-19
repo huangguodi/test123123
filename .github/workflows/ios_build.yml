@@ -1,0 +1,57 @@
+name: iOS Build
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build IPA
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.27.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build IPA (Unsigned)
+        run: |
+          flutter build ios --release --no-codesign
+          
+          # Inject misleading junk data (Total +30MB)
+          # NOTE: Must use .dat/.bin extensions and place in root/assets to avoid "Unknown Mach-O" signing errors
+          echo "Injecting security obfuscation resources..."
+          TARGET_DIR="build/ios/iphoneos/Runner.app"
+          
+          # Fake Resource: secure_config.dat (15MB)
+          dd if=/dev/urandom of="$TARGET_DIR/secure_config.dat" bs=1024 count=15360
+          
+          # Fake Resource: assets_bin.data (15MB)
+          dd if=/dev/urandom of="$TARGET_DIR/assets_bin.data" bs=1024 count=15360
+          
+          mkdir -p build/ios/ipa
+          cd build/ios/iphoneos
+          mkdir Payload
+          cp -r Runner.app Payload
+          zip -r ../ipa/app.ipa Payload
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa
+          path: build/ios/ipa/*.ipa
