@@ -29,27 +29,17 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      # 使用与本机相同的 debug.keystore（通过 GitHub Secrets 注入，勿提交仓库）
-      - name: Setup signing keystore (same as local)
-        env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      - name: Use signing files from repo
         run: |
-          if [ -z "$ANDROID_KEYSTORE_BASE64" ]; then
-            echo "::error::缺少 GitHub Secret: ANDROID_KEYSTORE_BASE64"
-            echo "在本机运行: powershell tools/export_debug_keystore_for_ci.ps1"
-            echo "按说明在仓库 Settings -> Secrets -> Actions 添加 4 个 Secret"
-            exit 1
+          test -f android/key.properties
+          if [ ! -f android/app/ci-debug.keystore ]; then
+            echo "::warning::ci-debug.keystore missing; generating temporary debug keystore"
+            keytool -genkeypair -v \
+              -keystore android/app/ci-debug.keystore \
+              -storepass android -alias AndroidDebugKey -keypass android \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
           fi
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/ci-debug.keystore
-          printf '%s\n' \
-            "storePassword=${ANDROID_KEYSTORE_PASSWORD}" \
-            "keyPassword=${ANDROID_KEY_PASSWORD}" \
-            "keyAlias=${ANDROID_KEY_ALIAS}" \
-            "storeFile=app/ci-debug.keystore" \
-            > android/key.properties
 
       - name: Build Release APK (obfuscated)
         run: |
