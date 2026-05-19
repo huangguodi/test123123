@@ -44,6 +44,9 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Local signing export (never commit)
+tools/debug_keystore.base64.txt
+
 # Local release outputs
 /release_output/
 *.ipa

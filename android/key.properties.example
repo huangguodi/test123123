@@ -1,0 +1,7 @@
+# Copy to android/key.properties (gitignored) or run: tools/setup_local_signing.ps1
+# CI uses the same file content via GitHub Secrets (keystore is NOT committed).
+
+storePassword=android
+keyPassword=android
+keyAlias=AndroidDebugKey
+storeFile=app/ci-debug.keystore
