@@ -16,6 +16,7 @@ set "https_proxy=http://%PROXY_HOST%:%PROXY_PORT%"
 set "NO_PROXY=localhost,127.0.0.1,::1"
 set "no_proxy=localhost,127.0.0.1,::1"
 echo [Proxy] %HTTP_PROXY%
+set "GRADLE_OPTS=-Dhttp.proxyHost=%PROXY_HOST% -Dhttp.proxyPort=%PROXY_PORT% -Dhttps.proxyHost=%PROXY_HOST% -Dhttps.proxyPort=%PROXY_PORT%"
 echo.
 
 :: 1. Define Variables

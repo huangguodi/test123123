@@ -1,0 +1,7 @@
+# Optional: copy to android/gradle-local.properties (gitignored) for local proxy only.
+# Or add the same lines to %USERPROFILE%\.gradle\gradle.properties
+
+systemProp.http.proxyHost=127.0.0.1
+systemProp.http.proxyPort=7890
+systemProp.https.proxyHost=127.0.0.1
+systemProp.https.proxyPort=7890

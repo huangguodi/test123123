@@ -9,6 +9,13 @@ jobs:
   build:
     name: Build APK (same as build_release_secure.bat)
     runs-on: ubuntu-latest
+    env:
+      # Do not use local Clash proxy on GitHub runners
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      http_proxy: ""
+      https_proxy: ""
+      GRADLE_OPTS: ""
 
     steps:
       - uses: actions/checkout@v4
