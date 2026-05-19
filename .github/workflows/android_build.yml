@@ -10,11 +10,9 @@ jobs:
     name: Build APK (same as build_release_secure.bat)
     runs-on: ubuntu-latest
     env:
-      # Do not use local Clash proxy on GitHub runners
+      # Clear proxy (do not use local 127.0.0.1:7890 on GitHub runners)
       HTTP_PROXY: ""
       HTTPS_PROXY: ""
-      http_proxy: ""
-      https_proxy: ""
       GRADLE_OPTS: ""
 
     steps:
@@ -36,10 +34,19 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Verify signing files in repo
+      - name: Verify ci-debug.keystore (project certificate)
         run: |
           test -f android/key.properties
           test -f android/app/ci-debug.keystore
+          grep -q 'ci-debug.keystore' android/key.properties
+          EXPECTED="CB:8E:0E:FF:AA:DB:B3:3F:61:CC:9D:AF:EB:1F:AC:F9:EC:21:00:8C:5D:36:D7:61:18:08:47:CB:D7:E6:BC:23"
+          ACTUAL=$(keytool -list -v \
+            -keystore android/app/ci-debug.keystore \
+            -storepass android \
+            -alias AndroidDebugKey 2>/dev/null \
+            | grep "SHA256:" | head -1 | awk '{print $2}')
+          echo "Keystore SHA256: $ACTUAL"
+          test "$ACTUAL" = "$EXPECTED"
 
       - name: Build Release APK (obfuscated)
         run: |
