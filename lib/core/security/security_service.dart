@@ -1,9 +1,6 @@
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:safe_device/safe_device.dart';
-import 'package:logger/logger.dart';
-import 'obfuscator.dart';
-
 class SecurityService {
   // final Logger _logger = Logger();
 
@@ -23,8 +20,10 @@ class SecurityService {
   /// 运行全面的环境安全检查
   /// 如果环境不安全，可能会抛出异常或直接退出应用
   Future<void> ensureSecureEnvironment() async {
-    // 0. Code Integrity Check (Honeypot/Repackaging Defense)
-    await _checkAppSignature();
+    // Android: 已移除 APK 证书指纹校验，便于更换签名证书
+    if (!Platform.isAndroid) {
+      await _checkAppSignature();
+    }
 
     // 1. Root / Jailbreak Detection
     bool isJailbroken = false;
@@ -54,27 +53,9 @@ class SecurityService {
     // Dart HttpClient findProxy='DIRECT' 已经能防御大部分 HTTP 代理抓包
   }
 
-  /// 校验应用签名（核心完整性校验）
-  /// 这里的签名 Hash 应为你的生产证书 SHA-256
+  /// iOS 可选签名校验（当前未启用强制比对）
   Future<void> _checkAppSignature() async {
-    // 已从 Obfuscator.appSignature 统一获取真实指纹
-    final String expectedHash = Obfuscator.appSignature;
-
-    if (Platform.isAndroid) {
-      try {
-        const platform = MethodChannel('com.example.address/security');
-        final String? currentSignature = await platform.invokeMethod<String>('getAppSignature');
-
-        if (currentSignature == null || currentSignature != expectedHash) {
-          _terminateApp('Code Integrity Violation: Signature Mismatch');
-        } else {
-          // Signature Verified
-        }
-      } catch (e) {
-        // 签名获取失败通常意味着环境异常，建议终止
-        _terminateApp('Signature Check Failed: $e');
-      }
-    } else if (Platform.isIOS) {
+    if (Platform.isIOS) {
       try {
         const platform = MethodChannel('com.example.address/security');
         final String? currentSignature = await platform.invokeMethod<String>('getAppSignature');
