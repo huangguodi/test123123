@@ -36,17 +36,10 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Use signing files from repo
+      - name: Verify signing files in repo
         run: |
           test -f android/key.properties
-          if [ ! -f android/app/ci-debug.keystore ]; then
-            echo "::warning::ci-debug.keystore missing; generating temporary debug keystore"
-            keytool -genkeypair -v \
-              -keystore android/app/ci-debug.keystore \
-              -storepass android -alias AndroidDebugKey -keypass android \
-              -keyalg RSA -keysize 2048 -validity 10000 \
-              -dname "CN=Android Debug,O=Android,C=US"
-          fi
+          test -f android/app/ci-debug.keystore
 
       - name: Build Release APK (obfuscated)
         run: |

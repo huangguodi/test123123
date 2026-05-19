@@ -28,8 +28,8 @@ void decrypt_with_signature(uint8_t* data, intptr_t data_len, uint8_t* sig_bytes
     if (data == nullptr || sig_bytes == nullptr || sig_len < 8) return;
 
     // 预设的合法签名特征（前8位），用于校验环境
-    // Android 指纹: 30:D6:18... -> 对应 ASCII: '3', '0', ':', 'D', '6', ':', '1', '8'
-    const uint8_t android_prefix[] = {0x33, 0x30, 0x3A, 0x44, 0x36, 0x3A, 0x31, 0x38}; 
+    // Android 指纹: CB:8E:0E... (ci-debug.keystore)
+    const uint8_t android_prefix[] = {0x43, 0x42, 0x3A, 0x38, 0x45, 0x3A, 0x30, 0x45}; 
     // iOS 指纹 (Binary Format): 7C:9F:B4:1E...
     const uint8_t ios_prefix[] = { 0x7C, 0x9F, 0xB4, 0x1E, 0xCC, 0x39, 0xBB, 0x98 };
     
